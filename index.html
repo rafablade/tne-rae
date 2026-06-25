@@ -227,7 +227,7 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
 <div class="page">
   <div class="header">
     <a class="reset-badge" href="javascript:void(0)" onclick="abrirPwd()">R</a>
-    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v0.8</a>
+    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v0.9</a>
     <div class="logo-wrap">
       <img id="logo-img" alt="Timenow"/>
     </div>
@@ -345,7 +345,7 @@ document.getElementById('logo-img').src='data:image/png;base64,iVBORw0KGgoAAAANS
 
 // ── CHANGELOG ─────────────────────────────────────────────────────────────
 var CL = {
-  "v0.8": ["Correção universal da abertura do WhatsApp — usa scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari","Nunca abre apps como PDF converter ou Video Downloader — só WhatsApp","Se dois WA instalados sem padrão, o Android mostra apenas eles para escolher","Fallback automático para wa.me se nenhum WA estiver instalado"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
+  "v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
   "v0.6": ["Persistência completa no localStorage","Todos os campos salvos automaticamente","Ao reabrir o app, tudo restaurado","Reset (R + senha) limpa tudo"],
   "v0.5": ["Motivo do X preservado ao alternar status","Emojis ✅ e ❌ nativos do WhatsApp","Seletor Android entre WA normal e Business"],
   "v0.4": ["Reescrita completa — código limpo","Contador, horas, botões e modais funcionando","Totalmente responsivo Android/Windows"],
@@ -409,18 +409,21 @@ var SK     = 'rae_seq_v1';
 var SK_EST = 'rae_estado_v1'; // chave do estado completo
 
 function salvarEstado() {
+  // Proteção: só salva se o DOM estiver pronto (campos existem e têm valor)
+  var nrelEl = document.getElementById('nrel');
+  if (!nrelEl || !nrelEl.dataset.seq) return;
   var estado = {
-    seq:       parseInt(document.getElementById('nrel').dataset.seq || '1'),
-    data:      document.getElementById('data').value,
-    horaIni:   document.getElementById('hora-ini').value,
-    minIni:    document.getElementById('min-ini').value,
-    local:     document.getElementById('local').value,
+    seq:       parseInt(nrelEl.dataset.seq || '1'),
+    data:      (document.getElementById('data') || {}).value || '',
+    horaIni:   (document.getElementById('hora-ini') || {}).value || '',
+    minIni:    (document.getElementById('min-ini') || {}).value || '',
+    local:     (document.getElementById('local') || {}).value || '',
     empresas:  empresas,
-    empSel:    document.getElementById('emp').value,
-    fiscal:    document.getElementById('fiscal').value,
+    empSel:    (document.getElementById('emp') || {}).value || '',
+    fiscal:    (document.getElementById('fiscal') || {}).value || '',
     atividades: atividades,
     cargos:    cargos,
-    obsEf:     document.getElementById('obs-ef').value
+    obsEf:     (document.getElementById('obs-ef') || {}).value || ''
   };
   try { localStorage.setItem(SK_EST, JSON.stringify(estado)); } catch(e) {}
 }
@@ -553,12 +556,7 @@ function atualizarShEfetivo() {
 });
 document.getElementById('obs-ef').addEventListener('input', salvarEstado);
 
-// ── BOOT: carrega estado salvo ou inicia defaults ──────────────────────────
-(function boot() {
-  renderEmpresas(); // defaults primeiro
-  var restaurou = carregarEstado(); // sobrescreve com o que estava salvo
-  if (!restaurou) carregarContador(); // sem estado salvo: só carrega o contador
-})();
+// [boot movido para o final do script]
 
 // ── MODAL GENÉRICO ─────────────────────────────────────────────────────────
 var modalCtx = '';
@@ -884,10 +882,23 @@ function gerarRAE() {
     tentarAbrir(waUrl);
   }
 
-  btn.className = 'gbtn ok'; btn.textContent = '\u2713 Abrindo WhatsApp...';
+  // Incrementar e salvar ANTES de mudar visual do botão
   incrementarContador();
+  btn.className = 'gbtn ok'; btn.textContent = '\u2713 Abrindo WhatsApp...';
   setTimeout(function(){ btn.className = 'gbtn'; btn.textContent = '\uD83D\uDCF2 Gerar RAE'; }, 4000);
 }
+// ── BOOT FINAL — roda depois de TODAS as funções e variáveis declaradas ──────
+// Garante que hora, empresas, atividades, cargos já existem antes de restaurar.
+(function boot() {
+  // 1. Popula defaults (renderEmpresas já foi chamado acima nos listeners)
+  renderEmpresas();
+  // 2. Tenta restaurar estado completo do localStorage
+  var restaurou = carregarEstado();
+  // 3. Se não tinha nada salvo, só carrega o contador
+  if (!restaurou) carregarContador();
+  // 4. Primeiro salvar explícito para garantir que o estado inicial fica persistido
+  setTimeout(salvarEstado, 500);
+})();
 </script>
 </body>
 </html>
