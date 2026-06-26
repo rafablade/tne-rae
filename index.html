@@ -64,6 +64,19 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
 /* LEGENDA */
 .legenda-box{background:#f0fdf4;border:1px solid var(--gm);border-radius:8px;padding:10px 16px;font-size:var(--fsm);margin:0 clamp(14px,3vw,20px) 4px;display:none;line-height:2;}
 .legenda-box.open{display:block;}
+/* OCULTAR ATIVIDADES */
+.ocultar-toggle{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 13px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:9px;cursor:pointer;user-select:none;}
+.ocultar-toggle input[type=checkbox]{width:18px;height:18px;accent-color:var(--g);cursor:pointer;flex-shrink:0;}
+.ocultar-toggle label{font-size:var(--fsm);font-weight:600;color:#92400e;cursor:pointer;margin:0;}
+.ocultar-panel{margin-top:8px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;overflow:hidden;display:none;}
+.ocultar-panel.open{display:block;}
+.ocultar-panel-hdr{background:#fef3c7;padding:8px 14px;font-size:var(--fxs);font-weight:700;color:#92400e;letter-spacing:.06em;text-transform:uppercase;font-family:monospace;}
+.ocultar-list{display:flex;flex-direction:column;gap:0;}
+.ocultar-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #fde68a;cursor:pointer;}
+.ocultar-item:last-child{border-bottom:none;}
+.ocultar-item input[type=checkbox]{width:18px;height:18px;accent-color:#dc2626;cursor:pointer;flex-shrink:0;}
+.ocultar-item label{font-size:var(--fsm);color:var(--tx);cursor:pointer;flex:1;margin:0;}
+.ocultar-item.checked label{color:#dc2626;text-decoration:line-through;opacity:.7;}
 /* ATIVIDADES */
 .ativ-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
 .ativ-item{border:1.5px solid var(--gm);border-radius:10px;overflow:hidden;background:#f9fefb;}
@@ -227,7 +240,7 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
 <div class="page">
   <div class="header">
     <a class="reset-badge" href="javascript:void(0)" onclick="abrirPwd()">R</a>
-    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v0.9</a>
+    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.0</a>
     <div class="logo-wrap">
       <img id="logo-img" alt="Timenow"/>
     </div>
@@ -299,6 +312,16 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
         </div>
       </div>
       <div class="ativ-list" id="ativ-list"></div>
+
+      <!-- Ocultar atividades do relatório -->
+      <div class="ocultar-toggle" id="ocultar-toggle" style="display:none;" onclick="toggleOcultarPanel()">
+        <input type="checkbox" id="ocultar-chk" onclick="event.stopPropagation();toggleOcultarPanel()"/>
+        <label for="ocultar-chk">Deseja ocultar alguma atividade do relatório final?</label>
+      </div>
+      <div class="ocultar-panel" id="ocultar-panel">
+        <div class="ocultar-panel-hdr">Selecione as atividades a ocultar do relatório</div>
+        <div class="ocultar-list" id="ocultar-list"></div>
+      </div>
     </div>
 
     <!-- 04 -->
@@ -345,7 +368,7 @@ document.getElementById('logo-img').src='data:image/png;base64,iVBORw0KGgoAAAANS
 
 // ── CHANGELOG ─────────────────────────────────────────────────────────────
 var CL = {
-  "v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
+  "v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
   "v0.6": ["Persistência completa no localStorage","Todos os campos salvos automaticamente","Ao reabrir o app, tudo restaurado","Reset (R + senha) limpa tudo"],
   "v0.5": ["Motivo do X preservado ao alternar status","Emojis ✅ e ❌ nativos do WhatsApp","Seletor Android entre WA normal e Business"],
   "v0.4": ["Reescrita completa — código limpo","Contador, horas, botões e modais funcionando","Totalmente responsivo Android/Windows"],
@@ -691,7 +714,7 @@ function adicionarAtividade() {
   var inp = document.getElementById('ativ-inp');
   var val = titleCase(inp.value.trim());
   if (!val) return;
-  atividades.push({txt:val, status:'', motivo:'', motivoOk:false});
+  atividades.push({txt:val, status:'', motivo:'', motivoOk:false, ocultar:false});
   inp.value = ''; inp.focus(); renderAtividades(); salvarEstado();
 }
 function removerUltimaAtividade() {
@@ -768,6 +791,73 @@ function renderAtividades() {
     }
     list.appendChild(item);
   });
+  // Atualiza o toggle e o painel de ocultar
+  renderOcultarPanel();
+}
+
+// ── OCULTAR ATIVIDADES ────────────────────────────────────────────────────
+function renderOcultarPanel() {
+  var toggle = document.getElementById('ocultar-toggle');
+  var panel  = document.getElementById('ocultar-panel');
+  var olist  = document.getElementById('ocultar-list');
+  var chk    = document.getElementById('ocultar-chk');
+  if (!toggle) return;
+
+  // Mostrar o toggle só quando houver atividades
+  toggle.style.display = atividades.length ? 'flex' : 'none';
+  if (!atividades.length) {
+    panel.className = 'ocultar-panel';
+    if (chk) chk.checked = false;
+    return;
+  }
+
+  // Rebuild lista de checkboxes
+  olist.innerHTML = '';
+  atividades.forEach(function(a, i) {
+    var row = document.createElement('div');
+    row.className = 'ocultar-item' + (a.ocultar ? ' checked' : '');
+
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'ocb-' + i;
+    cb.checked = !!a.ocultar;
+    cb.onclick = (function(idx){ return function(e){
+      e.stopPropagation();
+      atividades[idx].ocultar = this.checked;
+      renderOcultarPanel();
+      salvarEstado();
+    }; })(i);
+
+    var lbl = document.createElement('label');
+    lbl.htmlFor = 'ocb-' + i;
+    var icon = a.status === 'ck' ? '✅ ' : a.status === 'xr' ? '❌ ' : '⬜ ';
+    lbl.textContent = icon + a.txt;
+
+    row.appendChild(cb);
+    row.appendChild(lbl);
+    olist.appendChild(row);
+  });
+
+  // Sincronizar o checkbox do toggle com o estado do painel
+  var algumOculto = atividades.some(function(a){ return a.ocultar; });
+  if (chk) chk.checked = algumOculto;
+}
+
+function toggleOcultarPanel() {
+  var panel = document.getElementById('ocultar-panel');
+  var chk   = document.getElementById('ocultar-chk');
+  var isOpen = panel.className.indexOf('open') >= 0;
+  if (isOpen) {
+    panel.className = 'ocultar-panel';
+    // Desmarcar todos ao fechar (limpa ocultações)
+    atividades.forEach(function(a){ a.ocultar = false; });
+    if (chk) chk.checked = false;
+    renderOcultarPanel();
+    salvarEstado();
+  } else {
+    panel.className = 'ocultar-panel open';
+    if (chk) chk.checked = true;
+  }
 }
 
 // ── LEGENDA ────────────────────────────────────────────────────────────────
@@ -829,13 +919,11 @@ function gerarRAE() {
   msg += '*Fiscal:* ' + fiscal + '\n';
   msg += '------------------------------------\n';
 
-  if (atividades.length) {
+  // Filtra atividades: apenas as não ocultas vão para o relatório
+  var ativsVisiveis = atividades.filter(function(a){ return !a.ocultar; });
+  if (ativsVisiveis.length) {
     msg += '*ATIVIDADES DO DIA:*\n';
-    atividades.forEach(function(a) {
-      // U+2705 = ✅ check verde WA  |  U+274E = ❎ X vermelho WA  |  U+25FB = quadrado sem status
-      // Na foto 2: check verde é o ícone nativo do WA = U+2705
-      // X vermelho nativo do WA = U+274E (❎ em fundo verde) OU U+274C (❌ vermelho puro)
-      // A foto mostra o ❌ vermelho puro (U+274C), então mantemos U+274C
+    ativsVisiveis.forEach(function(a) {
       var icon = a.status === 'ck' ? '\u2705' : a.status === 'xr' ? '\u274C' : '\u25FB\uFE0F';
       msg += icon + ' ' + a.txt + '\n';
       if (a.status === 'xr' && a.motivo && a.motivoOk) msg += '   \u21B3 Motivo: ' + a.motivo + '\n';
