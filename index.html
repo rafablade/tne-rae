@@ -188,9 +188,43 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
   .ativ-acts{gap:3px;} .ast{width:30px;height:30px;font-size:13px;}
   .aed,.arm{width:26px;height:26px;} .sh{font-size:8px;letter-spacing:.08em;} .abtn{width:34px;height:34px;}
 }
+
+/* Modal Carregar RAE */
+.carregar-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9990;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.carregar-bg.open{display:flex;}
+.carregar-box{background:#fff;border-radius:16px;padding:22px;width:100%;max-width:480px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.carregar-title{color:var(--g);font-size:15px;font-weight:800;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.carregar-close{background:var(--gl);border:none;border-radius:8px;padding:5px 12px;cursor:pointer;font-weight:700;color:var(--g);font-size:13px;}
+.carregar-hint{font-size:11px;color:#64748b;font-family:monospace;margin-bottom:10px;line-height:1.7;background:var(--gl);padding:8px 10px;border-radius:8px;}
+.carregar-box textarea{width:100%;min-height:180px;border-radius:9px;border:1.5px solid var(--gm);background:var(--gl);font-size:12px;font-family:monospace;padding:10px;outline:none;resize:vertical;color:#1a2e25;}
+.carregar-btns{display:flex;gap:8px;margin-top:10px;}
+.carregar-ok{flex:1;padding:12px;border-radius:9px;border:none;background:var(--g);color:#fff;font-weight:700;font-size:14px;cursor:pointer;}
+.carregar-cancel{padding:12px 16px;border-radius:9px;border:1.5px solid var(--gm);background:var(--gl);color:var(--g);font-weight:700;font-size:14px;cursor:pointer;}
+.carregar-err{font-size:11px;color:#dc2626;margin-top:8px;font-family:monospace;display:none;padding:6px 10px;background:#fee2e2;border-radius:6px;}
 </style>
 </head>
 <body>
+<!-- Modal Carregar RAE do WhatsApp -->
+<div class="carregar-bg" id="carregar-modal">
+  <div class="carregar-box">
+    <div class="carregar-title">
+      📋 Carregar RAE do WhatsApp
+      <button class="carregar-close" onclick="fecharCarregar()">✕ Fechar</button>
+    </div>
+    <div class="carregar-hint">
+      1. Abra o WhatsApp e copie o texto do RAE enviado<br>
+      2. Cole aqui abaixo e clique <strong>Carregar</strong><br>
+      3. Os campos serão preenchidos automaticamente
+    </div>
+    <textarea id="carregar-txt" placeholder="Cole aqui o texto do RAE copiado do WhatsApp..."></textarea>
+    <div class="carregar-err" id="carregar-err"></div>
+    <div class="carregar-btns">
+      <button class="carregar-ok" onclick="confirmarCarregar()">📥 Carregar</button>
+      <button class="carregar-cancel" onclick="fecharCarregar()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="load-bg" id="load"><div class="spinner"></div></div>
 
 <!-- Senha Reset -->
@@ -240,7 +274,7 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
 <div class="page">
   <div class="header">
     <a class="reset-badge" href="javascript:void(0)" onclick="abrirPwd()">R</a>
-    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.0</a>
+    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.1</a>
     <div class="logo-wrap">
       <img id="logo-img" alt="Timenow"/>
     </div>
@@ -351,6 +385,9 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
     <div class="gerar-wrap">
       <button class="gbtn" id="gbtn" onclick="gerarRAE()">📲 Gerar RAE</button>
     </div>
+    <div style="display:flex;justify-content:center;padding:0 clamp(14px,3vw,20px) clamp(14px,3vw,20px);">
+      <button onclick="abrirCarregar()" style="background:#fff;border:1.5px solid var(--gm);border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;color:var(--g);cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;max-width:clamp(260px,70vw,420px);justify-content:center;">📥 Carregar RAE do WhatsApp</button>
+    </div>
 
     <!-- 07 -->
     <div class="sh">07 / Enviar por E-mail <span style="font-weight:400;font-size:9px;opacity:.6">&nbsp;— uso futuro</span></div>
@@ -368,7 +405,7 @@ document.getElementById('logo-img').src='data:image/png;base64,iVBORw0KGgoAAAANS
 
 // ── CHANGELOG ─────────────────────────────────────────────────────────────
 var CL = {
-  "v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
+  "v1.1":["Botao Carregar RAE do WhatsApp","Cole o texto gerado pelo RAE e os campos sao preenchidos automaticamente","Suporte a atividades, efetivo, fiscal, empresa, data, hora e local"],"v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
   "v0.6": ["Persistência completa no localStorage","Todos os campos salvos automaticamente","Ao reabrir o app, tudo restaurado","Reset (R + senha) limpa tudo"],
   "v0.5": ["Motivo do X preservado ao alternar status","Emojis ✅ e ❌ nativos do WhatsApp","Seletor Android entre WA normal e Business"],
   "v0.4": ["Reescrita completa — código limpo","Contador, horas, botões e modais funcionando","Totalmente responsivo Android/Windows"],
@@ -987,6 +1024,175 @@ function gerarRAE() {
   // 4. Primeiro salvar explícito para garantir que o estado inicial fica persistido
   setTimeout(salvarEstado, 500);
 })();
+
+// ── CARREGAR RAE DO WHATSAPP ─────────────────────────────────────────────
+function abrirCarregar(){
+  document.getElementById('carregar-txt').value='';
+  document.getElementById('carregar-err').style.display='none';
+  document.getElementById('carregar-modal').className='carregar-bg open';
+}
+function fecharCarregar(){
+  document.getElementById('carregar-modal').className='carregar-bg';
+}
+
+function confirmarCarregar(){
+  var txt = document.getElementById('carregar-txt').value.trim();
+  var err = document.getElementById('carregar-err');
+  err.style.display='none';
+
+  if(!txt || txt.length < 20){
+    err.style.display='block'; err.textContent='Cole o texto do RAE antes de carregar.'; return;
+  }
+
+  // ── Parser do formato gerado por gerarRAE() ──────────────────────────
+  // *REGISTRO DE ATIVIDADES E EFETIVO*
+  // ------------------------------------
+  // *TNE - RAE-001 / AMT*
+  // *Data:* dd/mm/aaaa
+  // *Projeto:* PROJ
+  // *Início das Atividades:* HH:MM
+  // *Local:* LOCAL
+  // *Empresa Contratada:* EMP
+  // *Fiscal:* FISCAL
+  // ------------------------------------
+  // *ATIVIDADES DO DIA:*
+  // ✅/❌/▪️ atividade
+  //    ↳ Motivo: ...
+  // ------------------------------------
+  // *EFETIVO EMP:*
+  // Cargo: *N*
+  // *Total do Efetivo: N*
+  // _Obs: ..._
+  // ------------------------------------
+  // rodapé
+
+  function extrair(padrao, txt){
+    var m = txt.match(padrao);
+    return m ? m[1].trim() : '';
+  }
+
+  var data    = extrair(/\*Data:\*\s*(.+)/i, txt);
+  var proj    = extrair(/\*Projeto:\*\s*(.+)/i, txt);
+  var horaIni = extrair(/\*In[íi]cio das Atividades:\*\s*(.+)/i, txt);
+  var local   = extrair(/\*Local:\*\s*(.+)/i, txt);
+  var emp     = extrair(/\*Empresa Contratada:\*\s*(.+)/i, txt);
+  var fiscal  = extrair(/\*Fiscal:\*\s*(.+)/i, txt);
+
+  if(!proj && !emp && !fiscal){
+    err.style.display='block'; err.textContent='Não foi possível identificar um RAE válido neste texto.'; return;
+  }
+
+  // Data: converter dd/mm/aaaa → aaaa-mm-dd para o input type=date
+  if(data){
+    var dp = data.split('/');
+    if(dp.length===3){
+      var iso = dp[2].trim()+'-'+dp[1].trim().padStart(2,'0')+'-'+dp[0].trim().padStart(2,'0');
+      var el = document.getElementById('data');
+      if(el) el.value = iso;
+    }
+  }
+
+  if(proj){
+    var elp = document.getElementById('proj');
+    if(elp && !elp.readOnly) elp.value = proj;
+  }
+
+  if(horaIni){
+    var partes = horaIni.split(':');
+    var elH = document.getElementById('hora-ini');
+    var elM = document.getElementById('min-ini');
+    if(elH && partes[0]) elH.value = partes[0].padStart(2,'0');
+    if(elM && partes[1]) elM.value = partes[1].padStart(2,'0');
+  }
+
+  if(local){
+    var ell = document.getElementById('local');
+    if(ell) ell.value = local;
+  }
+
+  if(emp){
+    var ele = document.getElementById('emp');
+    if(ele){
+      // Verificar se valor existe nas opções; se não, adicionar
+      var exists = Array.from(ele.options).some(function(o){ return o.value===emp; });
+      if(!exists){
+        var opt = document.createElement('option');
+        opt.value = emp; opt.textContent = emp;
+        ele.appendChild(opt);
+        if(!empresas.includes(emp)) empresas.push(emp);
+      }
+      ele.value = emp;
+      atualizarShEfetivo();
+    }
+  }
+
+  if(fiscal){
+    var elf = document.getElementById('fiscal');
+    if(elf) elf.value = fiscal;
+  }
+
+  // ── Atividades ───────────────────────────────────────────────────────
+  var atBlock = txt.match(/\*ATIVIDADES DO DIA:\*\n([\s\S]*?)(?:----|----|$)/);
+  if(atBlock){
+    var linhas = atBlock[1].split('\n');
+    var novasAtivs = [];
+    var i = 0;
+    while(i < linhas.length){
+      var linha = linhas[i].trim();
+      if(!linha){ i++; continue; }
+      var status = '';
+      var txt2 = linha;
+      if(linha.startsWith('✅') || linha.startsWith('\u2705')){ status='ck'; txt2=linha.substring(1).trim(); }
+      else if(linha.startsWith('❌') || linha.startsWith('\u274C')){ status='xr'; txt2=linha.substring(1).trim(); }
+      else if(linha.startsWith('▪') || linha.startsWith('\u25FB')){ status=''; txt2=linha.replace(/^[\u25FB\uFE0F]+/,'').trim(); }
+      else { i++; continue; }
+      var motivo='', motivoOk=false;
+      if(i+1 < linhas.length && linhas[i+1].includes('↳ Motivo:')){
+        motivo = linhas[i+1].replace(/.*↳ Motivo:/,'').trim();
+        motivoOk = true; i++;
+      }
+      if(txt2) novasAtivs.push({txt:txt2, status:status, motivo:motivo, motivoOk:motivoOk, ocultar:false});
+      i++;
+    }
+    if(novasAtivs.length){
+      atividades = novasAtivs;
+      renderAtividades();
+    }
+  }
+
+  // ── Efetivo ──────────────────────────────────────────────────────────
+  var efBlock = txt.match(/\*EFETIVO [^:]+:\*\n([\s\S]*?)(?:----|----|$)/);
+  if(efBlock){
+    var efLinhas = efBlock[1].split('\n');
+    var novosCargos = [];
+    efLinhas.forEach(function(linha){
+      linha = linha.trim();
+      // Formato: Cargo: *N*
+      var m2 = linha.match(/^(.+?):\s*\*(\d+)\*$/);
+      if(m2 && !linha.startsWith('*Total')){
+        novosCargos.push({nome:m2[1].trim(), qtd:m2[2]});
+      }
+    });
+    // Obs
+    var obsM = txt.match(/_Obs:\s*(.+)_/);
+    if(obsM){
+      var obsEl = document.getElementById('obs-ef');
+      if(obsEl) obsEl.value = obsM[1].trim();
+    }
+    if(novosCargos.length){
+      cargos = novosCargos;
+      // Adicionar cargos às empresas se necessário
+      renderEfetivo();
+    }
+  }
+
+  salvarEstado();
+  fecharCarregar();
+
+  // Feedback
+  var gbtn = document.getElementById('gbtn');
+  if(gbtn){ gbtn.className='gbtn ok'; gbtn.textContent='✓ RAE carregado!'; setTimeout(function(){ gbtn.className='gbtn'; gbtn.textContent='📲 Gerar RAE'; },3000); }
+}
 </script>
 </body>
 </html>
