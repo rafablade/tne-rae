@@ -274,7 +274,7 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
 <div class="page">
   <div class="header">
     <a class="reset-badge" href="javascript:void(0)" onclick="abrirPwd()">R</a>
-    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.1</a>
+    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.2</a>
     <div class="logo-wrap">
       <img id="logo-img" alt="Timenow"/>
     </div>
@@ -340,7 +340,7 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
     <div class="sb">
       <div class="field"><label>Atividade do Dia</label>
         <div class="row-add">
-          <input type="text" id="ativ-inp" placeholder="Digite a atividade..." autocomplete="off"/>
+          <input type="text" id="ativ-inp" placeholder="Digite a atividade..." autocomplete="off" spellcheck="true" lang="pt-BR"/>
           <button class="abtn plus" onclick="adicionarAtividade()" title="Adicionar">＋</button>
           <button class="abtn minus" onclick="removerUltimaAtividade()" title="Remover última">－</button>
         </div>
@@ -405,7 +405,7 @@ document.getElementById('logo-img').src='data:image/png;base64,iVBORw0KGgoAAAANS
 
 // ── CHANGELOG ─────────────────────────────────────────────────────────────
 var CL = {
-  "v1.1":["Botao Carregar RAE do WhatsApp","Cole o texto gerado pelo RAE e os campos sao preenchidos automaticamente","Suporte a atividades, efetivo, fiscal, empresa, data, hora e local"],"v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
+  "v1.2":["Corretor ortografico nativo pt-BR no campo de atividades (spellcheck)","Sugestoes do teclado Android e corretor Windows/Chrome em portugues","Title Case removido — texto livre conforme digitado","Emojis no Windows via clipboard (Ctrl+V no WhatsApp)"],"v1.1":["Botao Carregar RAE do WhatsApp","Cole o texto gerado pelo RAE e os campos sao preenchidos automaticamente","Suporte a atividades, efetivo, fiscal, empresa, data, hora e local"],"v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
   "v0.6": ["Persistência completa no localStorage","Todos os campos salvos automaticamente","Ao reabrir o app, tudo restaurado","Reset (R + senha) limpa tudo"],
   "v0.5": ["Motivo do X preservado ao alternar status","Emojis ✅ e ❌ nativos do WhatsApp","Seletor Android entre WA normal e Business"],
   "v0.4": ["Reescrita completa — código limpo","Contador, horas, botões e modais funcionando","Totalmente responsivo Android/Windows"],
@@ -704,52 +704,13 @@ function modalConcluir() {
 // ── ATIVIDADES ─────────────────────────────────────────────────────────────
 var atividades = [];
 // Palavras que NÃO devem ter inicial maiúscula (exceto se forem a 1ª palavra)
-var MINUSCULAS = {
-  // preposições
-  'a':1,'à':1,'ao':1,'às':1,'aos':1,'de':1,'do':1,'da':1,'dos':1,'das':1,
-  'em':1,'no':1,'na':1,'nos':1,'nas':1,'por':1,'pelo':1,'pela':1,'pelos':1,'pelas':1,
-  'para':1,'pra':1,'pro':1,'com':1,'sem':1,'sob':1,'sobre':1,'até':1,'ante':1,
-  'após':1,'entre':1,'contra':1,'desde':1,'perante':1,'durante':1,'mediante':1,
-  'via':1,'versus':1,'entre':1,
-  // conjunções
-  'e':1,'ou':1,'mas':1,'porém':1,'contudo':1,'todavia':1,'entretanto':1,
-  'nem':1,'que':1,'se':1,'pois':1,'logo':1,'porque':1,'quando':1,'como':1,
-  'embora':1,'ainda':1,'já':1,'além':1,'tanto':1,'quanto':1,'tal':1,
-  // artigos
-  'o':1,'os':1,'um':1,'uns':1,'uma':1,'umas':1
-};
 
-function titleCase(s) {
-  var words = s.split(' ');
-  return words.map(function(w, idx) {
-    if (!w) return w;
-    var lower = w.toLowerCase();
-    // Sempre maiúscula na primeira palavra
-    if (idx === 0) return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-    // Minúscula para palavras da lista
-    if (MINUSCULAS[lower]) return lower;
-    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-  }).join(' ');
-}
-document.getElementById('ativ-inp').addEventListener('input', function(){
-  var pos = this.selectionStart, v = this.value;
-  // Aplica title case só ao digitar espaço (palavra completa) para não atrapalhar digitação
-  // Mantém a primeira letra maiúscula enquanto digita
-  var words = v.split(' ');
-  var result = words.map(function(w, idx) {
-    if (!w) return w;
-    if (idx === 0) return w.charAt(0).toUpperCase() + w.slice(1);
-    var lower = w.toLowerCase();
-    if (MINUSCULAS[lower]) return lower;
-    return w.charAt(0).toUpperCase() + w.slice(1);
-  }).join(' ');
-  if (result !== v) { this.value = result; this.setSelectionRange(pos, pos); }
-});
+// titleCase removido — texto livre conforme digitado pelo usuário
 document.getElementById('ativ-inp').addEventListener('keydown', function(e){ if(e.key==='Enter') adicionarAtividade(); });
 
 function adicionarAtividade() {
   var inp = document.getElementById('ativ-inp');
-  var val = titleCase(inp.value.trim());
+  var val = inp.value.trim();
   if (!val) return;
   atividades.push({txt:val, status:'', motivo:'', motivoOk:false, ocultar:false});
   inp.value = ''; inp.focus(); renderAtividades(); salvarEstado();
@@ -765,7 +726,7 @@ function setStatus(i, st) {
 }
 function editarAtiv(i) {
   var novo = prompt('Editar atividade:', atividades[i].txt);
-  if (novo !== null && novo.trim()) { atividades[i].txt = titleCase(novo.trim()); renderAtividades(); salvarEstado(); }
+  if (novo !== null && novo.trim()) { atividades[i].txt = novo.trim(); renderAtividades(); salvarEstado(); }
 }
 function excluirAtiv(i) { atividades.splice(i, 1); renderAtividades(); salvarEstado(); }
 function confirmarMotivo(i) {
@@ -961,7 +922,7 @@ function gerarRAE() {
   if (ativsVisiveis.length) {
     msg += '*ATIVIDADES DO DIA:*\n';
     ativsVisiveis.forEach(function(a) {
-      var icon = a.status === 'ck' ? '\u2705' : a.status === 'xr' ? '\u274C' : '\u25FB\uFE0F';
+      var icon = a.status === 'ck' ? '\u2705' : a.status === 'xr' ? '\u274C' : '\u25C6';
       msg += icon + ' ' + a.txt + '\n';
       if (a.status === 'xr' && a.motivo && a.motivoOk) msg += '   \u21B3 Motivo: ' + a.motivo + '\n';
     });
@@ -1003,13 +964,31 @@ function gerarRAE() {
       if (document.visibilityState !== 'hidden') tentarAbrir(waUrl);
     }, 1500);
   } else {
-    // Desktop Windows / Mac
-    tentarAbrir(waUrl);
+    // Desktop Windows / Mac: copiar para área de transferência
+    // wa.me perde emojis ✅❌ no WhatsApp Web — clipboard preserva tudo
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(msg).then(function(){
+        btn.className = 'gbtn ok';
+        btn.textContent = '✓ Copiado! Cole no WhatsApp';
+        // Também tentar abrir WhatsApp Web como fallback
+        setTimeout(function(){ tentarAbrir(waUrl); }, 300);
+        return;
+      }).catch(function(){
+        tentarAbrir(waUrl);
+      });
+    } else {
+      tentarAbrir(waUrl);
+    }
   }
 
   // Incrementar e salvar ANTES de mudar visual do botão
   incrementarContador();
-  btn.className = 'gbtn ok'; btn.textContent = '\u2713 Abrindo WhatsApp...';
+  if (!/android|iphone|ipad|ipod/i.test(navigator.userAgent || '')) {
+    // Desktop: feedback é dado pelo clipboard handler acima
+  } else {
+    btn.className = 'gbtn ok'; btn.textContent = '\u2713 Abrindo WhatsApp...';
+    setTimeout(function(){ btn.className = 'gbtn'; btn.textContent = '\uD83D\uDCF2 Gerar RAE'; }, 4000);
+  }
   setTimeout(function(){ btn.className = 'gbtn'; btn.textContent = '\uD83D\uDCF2 Gerar RAE'; }, 4000);
 }
 // ── BOOT FINAL — roda depois de TODAS as funções e variáveis declaradas ──────
@@ -1144,7 +1123,7 @@ function confirmarCarregar(){
       var txt2 = linha;
       if(linha.startsWith('✅') || linha.startsWith('\u2705')){ status='ck'; txt2=linha.substring(1).trim(); }
       else if(linha.startsWith('❌') || linha.startsWith('\u274C')){ status='xr'; txt2=linha.substring(1).trim(); }
-      else if(linha.startsWith('▪') || linha.startsWith('\u25FB')){ status=''; txt2=linha.replace(/^[\u25FB\uFE0F]+/,'').trim(); }
+      else if(linha.startsWith('◆') || linha.startsWith('\u25C6') || linha.startsWith('▪') || linha.startsWith('\u25FB')){ status=''; txt2=linha.replace(/^[\u25C6\u25FB\uFE0F▪◆]+/,'').trim(); }
       else { i++; continue; }
       var motivo='', motivoOk=false;
       if(i+1 < linhas.length && linhas[i+1].includes('↳ Motivo:')){
