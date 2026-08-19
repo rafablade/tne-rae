@@ -274,7 +274,7 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
 <div class="page">
   <div class="header">
     <a class="reset-badge" href="javascript:void(0)" onclick="abrirPwd()">R</a>
-    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.2</a>
+    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.3</a>
     <div class="logo-wrap">
       <img id="logo-img" alt="Timenow"/>
     </div>
@@ -405,7 +405,7 @@ document.getElementById('logo-img').src='data:image/png;base64,iVBORw0KGgoAAAANS
 
 // ── CHANGELOG ─────────────────────────────────────────────────────────────
 var CL = {
-  "v1.2":["Corretor ortografico nativo pt-BR no campo de atividades (spellcheck)","Sugestoes do teclado Android e corretor Windows/Chrome em portugues","Title Case removido — texto livre conforme digitado","Emojis no Windows via clipboard (Ctrl+V no WhatsApp)"],"v1.1":["Botao Carregar RAE do WhatsApp","Cole o texto gerado pelo RAE e os campos sao preenchidos automaticamente","Suporte a atividades, efetivo, fiscal, empresa, data, hora e local"],"v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
+  "v1.3":["Corrigido: excluir motivo agora remove o campo completamente sem deixar caixa vazia","Ao clicar xr campo de motivo abre automaticamente","Flag editandoMotivo controla visibilidade do campo","Corretor ortografico pt-BR no campo de atividades"],"v1.2":["Corretor ortografico nativo pt-BR no campo de atividades (spellcheck)","Sugestoes do teclado Android e corretor Windows/Chrome em portugues","Title Case removido — texto livre conforme digitado","Emojis no Windows via clipboard (Ctrl+V no WhatsApp)"],"v1.1":["Botao Carregar RAE do WhatsApp","Cole o texto gerado pelo RAE e os campos sao preenchidos automaticamente","Suporte a atividades, efetivo, fiscal, empresa, data, hora e local"],"v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
   "v0.6": ["Persistência completa no localStorage","Todos os campos salvos automaticamente","Ao reabrir o app, tudo restaurado","Reset (R + senha) limpa tudo"],
   "v0.5": ["Motivo do X preservado ao alternar status","Emojis ✅ e ❌ nativos do WhatsApp","Seletor Android entre WA normal e Business"],
   "v0.4": ["Reescrita completa — código limpo","Contador, horas, botões e modais funcionando","Totalmente responsivo Android/Windows"],
@@ -720,8 +720,16 @@ function removerUltimaAtividade() {
   atividades.pop(); renderAtividades(); salvarEstado();
 }
 function setStatus(i, st) {
-  atividades[i].status = atividades[i].status === st ? '' : st;
-  // NÃO limpa motivo ao sair do xr — motivo só é limpo por excluirMotivo()
+  var prev = atividades[i].status;
+  atividades[i].status = prev === st ? '' : st;
+  // Ao ativar xr pela primeira vez sem motivo, abrir campo de motivo automaticamente
+  if (atividades[i].status === 'xr' && !atividades[i].motivo && !atividades[i].motivoOk) {
+    atividades[i].editandoMotivo = true;
+  }
+  // Ao sair do xr, fechar campo de motivo mas NÃO apagar motivo salvo
+  if (atividades[i].status !== 'xr') {
+    atividades[i].editandoMotivo = false;
+  }
   renderAtividades(); salvarEstado();
 }
 function editarAtiv(i) {
@@ -736,8 +744,8 @@ function confirmarMotivo(i) {
   atividades[i].motivoOk = true;
   renderAtividades(); salvarEstado();
 }
-function editarMotivo(i) { atividades[i].motivoOk = false; renderAtividades(); salvarEstado(); setTimeout(function(){ var inp=document.getElementById('minp-'+i); if(inp) inp.focus(); },50); }
-function excluirMotivo(i) { atividades[i].motivo = ''; atividades[i].motivoOk = false; renderAtividades(); salvarEstado(); }
+function excluirMotivo(i) { atividades[i].motivo = ''; atividades[i].motivoOk = false; atividades[i].editandoMotivo = false; renderAtividades(); salvarEstado(); }
+function editarMotivo(i) { atividades[i].motivoOk = false; atividades[i].editandoMotivo = true; renderAtividades(); salvarEstado(); setTimeout(function(){ var inp=document.getElementById('minp-'+i); if(inp) inp.focus(); },50); }
 
 function renderAtividades() {
   var list = document.getElementById('ativ-list'); list.innerHTML = '';
@@ -762,6 +770,7 @@ function renderAtividades() {
     if (a.status === 'xr') {
       var mv = document.createElement('div'); mv.className = 'motivo-area';
       if (a.motivoOk && a.motivo) {
+        // Motivo confirmado — mostrar texto + botões editar/excluir
         var sv = document.createElement('div'); sv.className = 'motivo-saved';
         sv.innerHTML = '<span>\u21B3 ' + a.motivo + '</span>';
         var bw = document.createElement('div'); bw.style.cssText = 'display:flex;gap:5px;flex-shrink:0;';
@@ -770,7 +779,8 @@ function renderAtividades() {
         var dlm = document.createElement('button'); dlm.className = 'mbtn dl'; dlm.textContent = '\u2715';
         dlm.onclick = (function(idx){ return function(){ excluirMotivo(idx); }; })(i);
         bw.appendChild(edm); bw.appendChild(dlm); sv.appendChild(bw); mv.appendChild(sv);
-      } else {
+      } else if (a.editandoMotivo || (a.motivo && !a.motivoOk)) {
+        // Editando motivo — mostrar campo de texto
         var mi = document.createElement('input'); mi.type = 'text'; mi.id = 'minp-'+i;
         mi.className = 'motivo-inp'; mi.placeholder = 'Motivo da não execução...'; mi.value = a.motivo;
         mi.addEventListener('keydown', (function(idx){ return function(e){ if(e.key==='Enter') confirmarMotivo(idx); }; })(i));
@@ -778,13 +788,12 @@ function renderAtividades() {
         var cfm = document.createElement('button'); cfm.className = 'mbtn cf'; cfm.textContent = '\u2713 Confirmar';
         cfm.onclick = (function(idx){ return function(){ confirmarMotivo(idx); }; })(i);
         mbtns.appendChild(cfm);
-        if (a.motivo) {
-          var dlm2 = document.createElement('button'); dlm2.className = 'mbtn dl'; dlm2.textContent = '\u2715 Excluir';
-          dlm2.onclick = (function(idx){ return function(){ excluirMotivo(idx); }; })(i);
-          mbtns.appendChild(dlm2);
-        }
+        var dlm2 = document.createElement('button'); dlm2.className = 'mbtn dl'; dlm2.textContent = '\u2715 Excluir';
+        dlm2.onclick = (function(idx){ return function(){ excluirMotivo(idx); }; })(i);
+        mbtns.appendChild(dlm2);
         mv.appendChild(mi); mv.appendChild(mbtns);
       }
+      // Se nem motivoOk nem editandoMotivo → não mostra nada (motivo excluído)
       item.appendChild(mv);
     }
     list.appendChild(item);
