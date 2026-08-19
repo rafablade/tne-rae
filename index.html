@@ -274,7 +274,7 @@ input[readonly]{background:var(--gray)!important;border-color:#bbb!important;col
 <div class="page">
   <div class="header">
     <a class="reset-badge" href="javascript:void(0)" onclick="abrirPwd()">R</a>
-    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.3</a>
+    <a class="version-badge" href="javascript:void(0)" onclick="abrirChangelog()">v1.4</a>
     <div class="logo-wrap">
       <img id="logo-img" alt="Timenow"/>
     </div>
@@ -405,7 +405,7 @@ document.getElementById('logo-img').src='data:image/png;base64,iVBORw0KGgoAAAANS
 
 // ── CHANGELOG ─────────────────────────────────────────────────────────────
 var CL = {
-  "v1.3":["Corrigido: excluir motivo agora remove o campo completamente sem deixar caixa vazia","Ao clicar xr campo de motivo abre automaticamente","Flag editandoMotivo controla visibilidade do campo","Corretor ortografico pt-BR no campo de atividades"],"v1.2":["Corretor ortografico nativo pt-BR no campo de atividades (spellcheck)","Sugestoes do teclado Android e corretor Windows/Chrome em portugues","Title Case removido — texto livre conforme digitado","Emojis no Windows via clipboard (Ctrl+V no WhatsApp)"],"v1.1":["Botao Carregar RAE do WhatsApp","Cole o texto gerado pelo RAE e os campos sao preenchidos automaticamente","Suporte a atividades, efetivo, fiscal, empresa, data, hora e local"],"v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
+  "v1.4":["Data sempre atualizada para o dia atual ao recarregar a pagina","Demais campos (atividades, efetivo, empresa, fiscal) permanecem salvos"],"v1.3":["Corrigido: excluir motivo agora remove o campo completamente sem deixar caixa vazia","Ao clicar xr campo de motivo abre automaticamente","Flag editandoMotivo controla visibilidade do campo","Corretor ortografico pt-BR no campo de atividades"],"v1.2":["Corretor ortografico nativo pt-BR no campo de atividades (spellcheck)","Sugestoes do teclado Android e corretor Windows/Chrome em portugues","Title Case removido — texto livre conforme digitado","Emojis no Windows via clipboard (Ctrl+V no WhatsApp)"],"v1.1":["Botao Carregar RAE do WhatsApp","Cole o texto gerado pelo RAE e os campos sao preenchidos automaticamente","Suporte a atividades, efetivo, fiscal, empresa, data, hora e local"],"v1.0": ["Novo: Ocultar atividades do relatório final — pergunta aparece após adicionar atividades","Checkbox por atividade para marcar o que NÃO deve aparecer no WhatsApp","Atividades ocultas ficam riscadas na lista mas permanecem salvas","Ícone ✅/❌/⬜ exibido ao lado de cada atividade no painel de ocultar","Fechar o painel desmarca todas as ocultações"],"v0.9": ["Correção crítica: dados não são mais apagados ao atualizar a página","Boot movido para o final do script — garante que hora/minuto e todos os campos existem antes de restaurar","salvarEstado protegido contra leitura prematura do DOM","incrementarContador roda antes da animação do botão — evita trava da interface","Página pode ficar aberta o dia todo sem travar"],"v0.8": ["Correção universal WhatsApp — scheme whatsapp:// direto, sem seletor genérico","Funciona em Chrome, Samsung Internet, Xiaomi nativo, Firefox, Safari"],"v0.7": ["Title Case inteligente — preposições, conjunções e artigos em minúsculo","Correção Samsung A07"],
   "v0.6": ["Persistência completa no localStorage","Todos os campos salvos automaticamente","Ao reabrir o app, tudo restaurado","Reset (R + senha) limpa tudo"],
   "v0.5": ["Motivo do X preservado ao alternar status","Emojis ✅ e ❌ nativos do WhatsApp","Seletor Android entre WA normal e Business"],
   "v0.4": ["Reescrita completa — código limpo","Contador, horas, botões e modais funcionando","Totalmente responsivo Android/Windows"],
@@ -497,7 +497,7 @@ function carregarEstado() {
     // Contador
     if (e.seq) { setNrel(e.seq); localStorage.setItem(SK, e.seq); }
     // Data
-    if (e.data) document.getElementById('data').value = e.data;
+    if (e.data) {} // data sempre atualizada para hoje — não restaurar do estado
     // Hora
     if (e.horaIni) document.getElementById('hora-ini').value = e.horaIni;
     if (e.minIni)  document.getElementById('min-ini').value  = e.minIni;
